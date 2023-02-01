@@ -12,13 +12,8 @@ from cfd_model.interpolator.torch_interpolator import interpolate
 from src.dataloader import (
     make_dataloaders_vorticity_making_observation_inside_time_series_splitted,
 )
-from src.dataset import (
-    DatasetMakingObsInsideTimeseriesSplitted,
-    DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-)
+from src.dataset import DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling
 from src.model_maker import make_model
-from src.sr_da_helper import append_zeros, inv_preprocess, preprocess
 
 if "ipykernel" in sys.modules:
     from tqdm.notebook import tqdm
@@ -31,11 +26,7 @@ logger = getLogger()
 
 def get_testdataset(
     root_dir: str, config: dict
-) -> typing.Union[
-    DatasetMakingObsInsideTimeseriesSplitted,
-    DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-]:
+) -> DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling:
     logger.setLevel(WARNING)
     (
         dataloaders,
@@ -108,10 +99,7 @@ def initialize_models(
 
 
 def read_all_hr_omegas(
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    ]
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
 ):
     paths = test_dataset.hr_file_paths
     return _read_all_hr_omegas(paths)
@@ -172,10 +160,7 @@ def _read_all_hr_omegas(paths: list):
 
 
 def read_all_lr_omegas(
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    ],
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
     lr_kind: str = "lr_omega_no-noise",
 ):
     paths = test_dataset.hr_file_paths
@@ -206,11 +191,7 @@ def read_all_lr_omegas(
 
 def get_observation_with_noise(
     hr_omega: torch.Tensor,
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-    ],
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
     *,
     n_ens,
     hr_nx,
@@ -257,13 +238,66 @@ def get_observation_with_noise(
     return hr_obsrv + torch.from_numpy(noise)
 
 
+def append_zeros(data: torch.Tensor):
+    assert data.ndim == 4  # ens, time, x, and y
+
+    zs = torch.zeros(data.shape[0:3], dtype=data.dtype)[..., None]
+
+    appended = torch.cat([data, zs], dim=-1)
+
+    # Check the last index of y has zero values
+    assert torch.max(torch.abs(appended[..., -1])).item() == 0.0
+
+    return appended
+
+
+def _preprocess(
+    data: torch.Tensor,
+    biases: torch.Tensor,
+    scales: torch.Tensor,
+    clamp_min: float,
+    clamp_max: float,
+):
+    ret = (data - biases) / scales
+    return torch.clamp(ret, min=clamp_min, max=clamp_max)
+
+
+def preprocess(
+    *,
+    data: torch.Tensor,
+    biases: torch.Tensor,
+    scales: torch.Tensor,
+    clamp_min: float,
+    clamp_max: float,
+    n_ens: int,
+    assimilation_period: int,
+    ny: int,
+    nx: int,
+    device: str,
+    dtype: torch.dtype = torch.float32,
+):
+    # time, ens, x, y --> ens, time, y, x
+    data = data[..., :-1].permute(1, 0, 3, 2).contiguous()
+    data = data.unsqueeze(2)  # Add channel dim
+    assert data.shape[0] == n_ens
+    assert data.ndim == 5  # batch, time, channel, y, x
+
+    data = _preprocess(data, biases, scales, clamp_min, clamp_max)
+    data = data.to(dtype).to(device)
+    assert data.shape[0] == n_ens
+    assert data.ndim == 5  # batch, time, channel, y, x
+
+    return data
+
+
+def inv_preprocess(data: torch.Tensor, biases: torch.Tensor, scales: torch.Tensor):
+    return data * scales + biases
+
+
 def make_preprocessed_lr(
     lr_forecast: torch.Tensor,
     last_omega0: torch.Tensor,
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    ],
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
     *,
     assimilation_period,
     n_ens,
@@ -295,10 +329,7 @@ def make_preprocessed_lr(
 
 def make_preprocessed_obs(
     hr_obs: torch.Tensor,
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    ],
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
     *,
     assimilation_period,
     n_ens,
@@ -328,10 +359,7 @@ def make_preprocessed_obs(
 
 def make_invprocessed_sr(
     preds: torch.Tensor,
-    test_dataset: typing.Union[
-        DatasetMakingObsInsideTimeseriesSplitted,
-        DatasetMakingObsInsideTimeseriesSplittedWithMixup,
-    ],
+    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
     *,
     assimilation_period,
     n_ens,
