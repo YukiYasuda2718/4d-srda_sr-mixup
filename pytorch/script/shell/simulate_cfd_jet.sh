@@ -7,7 +7,7 @@ SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/simulate_cfd_jet.py"
 
 # Change seed indices if necessary.
 I_SEED_START=0
-I_SEED_END=1
+I_SEED_END=1 # in paper, we set 249
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"
