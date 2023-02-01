@@ -1,0 +1,38 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+scikit-learn = "*"
+pandas = "*"
+scipy = "*"
+numpy = "*"
+tqdm = "*"
+tensorboard = "*"
+torchinfo = "*"
+xarray = "*"
+h5py = "*"
+netcdf4 = "*"
+
+[dev-packages]
+seaborn = "*"
+matplotlib = "*"
+jupyterlab = "*"
+jupyter-lsp = "*"
+jupyterlab-lsp = "*"
+python-lsp-server = "*"
+jupyterlab-code-formatter = "*"
+lckr-jupyterlab-variableinspector = "*"
+aquirdturtle-collapsible-headings = "*"
+ipywidgets = "*"
+widgetsnbextension = "*"
+isort = "*"
+black = "*"
+rope = "*"
+pyflakes = "*"
+flake8 = "*"
+pytest = "*"
+
+[requires]
+python_version = "3.8"

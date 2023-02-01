@@ -1,0 +1,40 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+scikit-learn = "*"
+pandas = "*"
+scipy = "*"
+numpy = "*"
+tqdm = "*"
+tensorboard = "*"
+torchinfo = "*"
+xarray = "*"
+h5py = "*"
+netcdf4 = "*"
+torch = {file = "https://download.pytorch.org/whl/cu102/torch-1.11.0%2Bcu102-cp38-cp38-linux_x86_64.whl"}
+torchvision = {file = "https://download.pytorch.org/whl/cu102/torchvision-0.12.0%2Bcu102-cp38-cp38-linux_x86_64.whl"}
+pyyaml = "*"
+
+[dev-packages]
+seaborn = "*"
+matplotlib = "*"
+jupyterlab = "*"
+jupyter-lsp = "*"
+jupyterlab-lsp = "*"
+python-lsp-server = "*"
+jupyterlab-code-formatter = "*"
+lckr-jupyterlab-variableinspector = "*"
+aquirdturtle-collapsible-headings = "*"
+ipywidgets = "*"
+widgetsnbextension = "*"
+isort = "*"
+black = "*"
+rope = "*"
+pyflakes = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.8"
