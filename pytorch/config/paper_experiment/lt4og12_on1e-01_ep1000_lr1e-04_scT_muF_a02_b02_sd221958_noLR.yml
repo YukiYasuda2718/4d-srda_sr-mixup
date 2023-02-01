@@ -25,7 +25,7 @@ model:
   feat_channels_2: 256
   feat_channels_3: 128
   latent_channels: 64
-  model_name: ConvTransformerSrDaNetVer03
+  model_name: ConvTransformerSrDaNetVer
   n_multi_attention_heads: 16
   n_transformer_blocks: 5
   sequence_length: 5
