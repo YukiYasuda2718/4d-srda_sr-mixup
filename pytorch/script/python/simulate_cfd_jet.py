@@ -68,7 +68,7 @@ DF_SEEDS = pd.read_csv(f"{ROOT_DIR}/pytorch/config/cfd_seeds/seeds01.csv").set_i
     "SimulationNumber"
 )
 
-EXPERIMENT_DIR = f"{ROOT_DIR}/data/pytorch/CFD/jet11"
+EXPERIMENT_DIR = f"{ROOT_DIR}/data/pytorch/CFD/jet01"
 os.makedirs(EXPERIMENT_DIR, exist_ok=True)
 
 
