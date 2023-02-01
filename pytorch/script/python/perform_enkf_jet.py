@@ -21,7 +21,7 @@ from cfd_model.initialization.periodic_channel_jet_initializer import calc_jet_f
 from cfd_model.interpolator.torch_interpolator import interpolate
 from src.dataloader import get_hr_file_paths
 from src.dataset import generate_is_obs_and_obs_matrix
-from src.sr_da_helper_2 import _read_all_hr_omegas
+from src.sr_da_helper import _read_all_hr_omegas
 from src.utils import set_seeds
 from tqdm import tqdm
 
