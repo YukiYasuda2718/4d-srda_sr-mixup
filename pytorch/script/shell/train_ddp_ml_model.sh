@@ -6,7 +6,7 @@ IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
 SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/train_ddp_ml_model.py"
 
 # Change config path if necessary.
-CONFIG_PATH="${ROOT_DIR}/pytorch/config/paper_experiment/lt4og04_on1e-01_ep1000_lr1e-04_scT_muF_a02_b02_noLR.yml"
+CONFIG_PATH="${ROOT_DIR}/pytorch/config/paper_experiment/lt4og12_on1e-01_ep1000_lr1e-04_scT_muT_a02_b02_sd221958.yml"
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"
