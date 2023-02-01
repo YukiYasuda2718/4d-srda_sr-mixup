@@ -8,6 +8,11 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
   - [Docker Containers](#docker-containers)
   - [Singularity Containers](#singularity-containers)
 - [How to Perform Experiments](#how-to-perform-experiments)
+  - [CFD Simulations](#cfd-simulations)
+  - [Data for Deep Learning](#data-for-deep-learning)
+  - [Deep Learning](#deep-learning)
+  - [Analysis](#analysis)
+- [Cite](#cite)
 
 
 ## Setup
@@ -39,3 +44,26 @@ $ singularity exec --nv --env PYTHONPATH="./pytorch" \
 ```
 
 ## How to Perform Experiments
+
+### CFD Simulations
+
+### Data for Deep Learning
+
+### Deep Learning
+
+### Analysis
+
+
+## Cite
+
+```
+@misc{https://doi.org/10.48550/arxiv.2212.03656,
+  doi = {10.48550/ARXIV.2212.03656},
+  url = {https://arxiv.org/abs/2212.03656},
+  author = {Yasuda, Yuki and Onishi, Ryo},  
+  title = {Spatio-Temporal Super-Resolution Data Assimilation (SRDA) Utilizing Deep Neural Networks with Domain Generalization Technique Toward Four-Dimensional SRDA},
+  publisher = {arXiv},
+  year = {2022},
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+```
