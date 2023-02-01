@@ -11,6 +11,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
   - [CFD Simulations](#cfd-simulations)
   - [Data for Deep Learning](#data-for-deep-learning)
   - [Deep Learning](#deep-learning)
+  - [EnKF (Baseline Model)](#enkf-baseline-model)
   - [Analysis](#analysis)
 - [Cite](#cite)
 
@@ -53,6 +54,8 @@ $ singularity exec --nv --env PYTHONPATH="./pytorch" \
 ### Data for Deep Learning
 
 ### Deep Learning
+
+### EnKF (Baseline Model)
 
 ### Analysis
 
