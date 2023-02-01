@@ -2,7 +2,7 @@ data:
   batch_size: 32
   beta_dist_alpha: 2.0
   beta_dist_beta: 2.0
-  data_dir_name: jet12
+  data_dir_name: jet02
   lr_kind_names:
   - lr_omega_no-noise
   lr_time_interval: 4

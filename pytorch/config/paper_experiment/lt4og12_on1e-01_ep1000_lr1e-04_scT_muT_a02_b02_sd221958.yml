@@ -1,6 +1,6 @@
 data:
   batch_size: 32
-  data_dir_name: jet12
+  data_dir_name: jet02
   lr_kind_names:
     - lr_omega_no-noise
   lr_time_interval: 4

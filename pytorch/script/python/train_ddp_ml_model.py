@@ -84,7 +84,7 @@ def train_and_validate(
         dataloaders, samplers = make_dataloaders_vorticity_making_observation_inside(
             ROOT_DIR, "jet02_obs-intrvl27", config, world_size=world_size, rank=rank
         )
-    elif config["data"]["data_dir_name"] == "jet12":
+    elif config["data"]["data_dir_name"] == "jet02":
         (
             dataloaders,
             samplers,

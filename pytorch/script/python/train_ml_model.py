@@ -94,7 +94,7 @@ if __name__ == "__main__":
             dataloaders, _ = make_dataloaders_vorticity_making_observation_inside(
                 ROOT_DIR, "jet02_obs-intrvl27", config
             )
-        elif config["data"]["data_dir_name"] == "jet12":
+        elif config["data"]["data_dir_name"] == "jet02":
             (
                 dataloaders,
                 _,
