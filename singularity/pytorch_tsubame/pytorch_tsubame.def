@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04
+
+%files
+    ./docker/pytorch_tsubame/Pipfile /workspace/
+    ./docker/pytorch_tsubame/Pipfile.lock /workspace/
+
+%environment
+    export PATH=/workspace/.local/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+    export PIP_NO_CACHE_DIR="off"
+    export WORKON_HOME=/workspace/.venvs
+    export PIPENV_VENV_IN_PROJECT=1
+
+%post
+    export DEBIAN_FRONTEND="noninteractive"
+    export PATH=/workspace/.local/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+    export PIP_NO_CACHE_DIR="off"
+    export WORKON_HOME=/workspace/.venvs
+    export PIPENV_VENV_IN_PROJECT=1
+
+    apt-get update
+    apt-get install -y less zsh git wget curl build-essential python3.8 python3-pip ttf-mscorefonts-installer
+    apt-get autoremove -y
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # Change python version to 3.8
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
+
+    # install python libraries
+    cd /workspace
+    rm -rf ${HOME}/.cache/pip ${HOME}/.cache/pipenv
+    pip3 install pip==22.2.2 pipenv==2022.8.5
+    pipenv install --system --dev --ignore-pipfile
+    rm -rf ${HOME}/.cache/pip ${HOME}/.cache/pipenv
