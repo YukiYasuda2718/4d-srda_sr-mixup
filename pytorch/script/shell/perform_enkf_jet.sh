@@ -4,7 +4,7 @@ ROOT_DIR= # Specify your root directory of this repository.
 
 IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
 SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/perform_enkf_jet"
-CONFIG_PATH="${ROOT_DIR}/pytorch/config/enkf_01/e100_sysstd_3e-01_sysdx_3e-01_locdx_3e-01_train0100.yml"
+CONFIG_PATH="${ROOT_DIR}/pytorch/config/enkf/e100_sysstd_1e+00_sysdx_1e+00_locdx_1e+00_train0200.yml"
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"

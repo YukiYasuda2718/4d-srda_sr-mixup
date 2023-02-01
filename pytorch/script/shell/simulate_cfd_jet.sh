@@ -11,6 +11,7 @@ I_SEED_END=1
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"
+echo "indices of seeds are from ${I_SEED_START} to ${I_SEED_END}"
 
 singularity exec \
   --nv \
