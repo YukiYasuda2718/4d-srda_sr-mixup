@@ -45,6 +45,9 @@ $ singularity exec --nv --env PYTHONPATH="./pytorch" \
 
 ## How to Perform Experiments
 
+- The Singularity container, `pytorch_local.sif`, is used in the following experiments.
+- On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
+
 ### CFD Simulations
 
 ### Data for Deep Learning
