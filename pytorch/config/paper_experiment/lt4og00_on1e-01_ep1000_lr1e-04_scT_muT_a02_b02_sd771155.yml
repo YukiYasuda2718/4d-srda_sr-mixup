@@ -1,0 +1,37 @@
+data:
+  batch_size: 32
+  beta_dist_alpha: 2.0
+  beta_dist_beta: 2.0
+  data_dir_name: jet12
+  lr_kind_names:
+  - lr_omega_no-noise
+  lr_time_interval: 4
+  obs_grid_interval: 0
+  obs_noise_std: 0.1
+  obs_time_interval: 4
+  train_valid_test_ratios:
+  - 0.7
+  - 0.2
+  - 0.1
+  use_mixup: true
+  use_mixup_init_time: false
+  use_observation: false
+  vorticity_bias: -14.5
+  vorticity_scale: 29.0
+model:
+  feat_channels_0: 64
+  feat_channels_1: 128
+  feat_channels_2: 256
+  feat_channels_3: 128
+  latent_channels: 64
+  model_name: ConvTransformerSrDaNetVer03
+  n_multi_attention_heads: 16
+  n_transformer_blocks: 5
+  sequence_length: 5
+  use_global_skip_connection: true
+train:
+  loss:
+    name: L1
+  lr: 0.0001
+  num_epochs: 1000
+  seed: 771155
