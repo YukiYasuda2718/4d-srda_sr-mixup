@@ -133,6 +133,7 @@ if __name__ == "__main__":
                 loss_fn=loss_fn,
                 optimizer=optimizer,
                 device=DEVICE,
+                epoch=epoch,
                 hide_progress_bar=True,
             )
             val_loss = test(
@@ -140,6 +141,7 @@ if __name__ == "__main__":
                 model=model,
                 loss_fn=loss_fn,
                 device=DEVICE,
+                epoch=epoch,
                 hide_progress_bar=True,
             )
 

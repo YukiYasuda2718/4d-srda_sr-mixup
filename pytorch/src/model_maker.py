@@ -1,7 +1,7 @@
 from logging import getLogger
 
 import torch
-from ml_model.conv2d_transformer_v3 import ConvTransformerSrDaNet
+from ml_model.conv2d_transformer import ConvTransformerSrDaNet
 
 logger = getLogger()
 
