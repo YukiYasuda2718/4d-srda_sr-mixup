@@ -205,23 +205,7 @@ class SobelNoiseGenerator:
 LR_NOISE_GENERATORS = {
     "no-noise": None,
 }
-for i_amp in [1.0, 3.0, 5.0, 7.0, 9.0]:
-    i = int(i_amp)
-    a = i_amp / 10.0
-    logger.info(f"\ni = {i}, a = {a}")
-    LR_NOISE_GENERATORS[f"gaussian_0p{i}"] = GaussianNoiseGenerator(noise_amplitude=a)
-    LR_NOISE_GENERATORS[f"sobel_y_p0p{i}"] = SobelNoiseGenerator(
-        axis=-1, noise_amplitude=a
-    )
-    LR_NOISE_GENERATORS[f"sobel_y_n0p{i}"] = SobelNoiseGenerator(
-        axis=-1, noise_amplitude=-a
-    )
-    LR_NOISE_GENERATORS[f"sobel_x_p0p{i}"] = SobelNoiseGenerator(
-        axis=-2, noise_amplitude=a
-    )
-    LR_NOISE_GENERATORS[f"sobel_x_n0p{i}"] = SobelNoiseGenerator(
-        axis=-2, noise_amplitude=-a
-    )
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--i_seed_start", type=int, required=True)
