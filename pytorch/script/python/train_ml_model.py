@@ -193,6 +193,7 @@ if __name__ == "__main__":
             model=model,
             loss_fn=loss_fn,
             device=DEVICE,
+            epoch=0,  # arbitrary, this is used to set seed in test method.
             hide_progress_bar=True,
         )
 
