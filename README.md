@@ -12,7 +12,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
   - [Data for Deep Learning](#data-for-deep-learning)
   - [Deep Learning](#deep-learning)
   - [Evaluation of Deep-Learning Models](#evaluation-of-deep-learning-models)
-  - [EnKF (Baseline Model)](#enkf-baseline-model)
+  - [Comparison with EnKF (Baseline Model)](#comparison-with-enkf-baseline-model)
 - [Cite](#cite)
 
 
@@ -83,12 +83,13 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ### Evaluation of Deep-Learning Models
 
-1. Evaluate trained models using SRDA (i.e., repeating feedback cycles) using [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
-2. Evaluate trained models using test dataloaders (i.e., without feedback cycles) using [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
+1. Evaluate trained models using SRDA (i.e., repeating feedback cycles) by running [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
+2. Evaluate trained models using test dataloaders (i.e., without feedback cycles) by running [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
 
-### EnKF (Baseline Model)
+### Comparison with EnKF (Baseline Model)
 
-
+1. Peform CFD simulations with EnKF by running [perform_enkf.ipynb](./pytorch/notebook/paper_experiment/perform_enkf.ipynb).
+2. Compare the obtained results with those of SRDA by running [compare_srda_enkf.ipynb](./pytorch/notebook/paper_experiment/compare_srda_enkf.ipynb).
 
 
 ## Cite
