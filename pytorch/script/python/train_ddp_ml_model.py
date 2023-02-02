@@ -15,9 +15,6 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 import yaml
 from src.dataloader import (
-    make_dataloaders_2d_gauss_jet,
-    make_dataloaders_vorticity_assimilation,
-    make_dataloaders_vorticity_making_observation_inside,
     make_dataloaders_vorticity_making_observation_inside_time_series_splitted,
 )
 from src.loss_maker import make_loss
@@ -69,22 +66,7 @@ def train_and_validate(
         logger.info("Make dataloaders and samplers")
         logger.info("################################\n")
 
-    if config["data"]["data_dir_name"] == "2d_gauss_jet_dt_01p00_v01":
-        dataloaders, samplers = make_dataloaders_2d_gauss_jet(
-            root_dir=ROOT_DIR, config=config, world_size=world_size, rank=rank
-        )
-    elif config["data"]["data_dir_name"] in [
-        "jet02_obs-intrvl27",
-        "jet03_obs-intrvl27",
-    ]:
-        dataloaders, samplers = make_dataloaders_vorticity_assimilation(
-            root_dir=ROOT_DIR, config=config, world_size=world_size, rank=rank
-        )
-    elif config["data"]["data_dir_name"] == "jet02_obs-intrvl27_not_using_obs":
-        dataloaders, samplers = make_dataloaders_vorticity_making_observation_inside(
-            ROOT_DIR, "jet02_obs-intrvl27", config, world_size=world_size, rank=rank
-        )
-    elif config["data"]["data_dir_name"] == "jet02":
+    if config["data"]["data_dir_name"] == "jet02":
         (
             dataloaders,
             samplers,
