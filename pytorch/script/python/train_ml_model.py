@@ -23,7 +23,9 @@ from src.optim_helper import test, train
 from src.utils import set_seeds
 
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = r":4096:8"  # to make calculations deterministic
-set_seeds(42, use_deterministic=True)
+set_seeds(42, use_deterministic=False)
+# In PyTorch 1.11.0, `upsample_trilinear3d_backward_out_cuda` does not have a deterministic implementation.
+# Thus, `torch.use_deterministic_algorithms` cannot be used.
 
 logger = getLogger()
 logger.addHandler(StreamHandler(sys.stdout))
