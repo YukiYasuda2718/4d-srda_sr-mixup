@@ -1,13 +1,14 @@
 #!/bin/bash
 
-ROOT_DIR= # Specify your root directory of this repository.
+ # Specify your root directory of this repository in the Singularity container.
+ROOT_DIR=
 
 IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
 SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/simulate_cfd_jet.py"
 
 # Change seed indices if necessary.
 I_SEED_START=0
-I_SEED_END=1 # in paper, we set 249
+I_SEED_END=9 # in paper, we set 249
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"
