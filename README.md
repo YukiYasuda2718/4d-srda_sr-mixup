@@ -51,11 +51,11 @@ $ singularity exec --nv --env PYTHONPATH="./pytorch" \
 
 ### CFD Simulations
 
-1. Set the number of simulations
-  - Specify seed indices in [the shell script](./pytorch/script/shell/simulate_cfd_jet.sh)
-  - [The pyton script](./pytorch/script/python/simulate_cfd_jet.py) performs CFD simulations using batch calculations, where the batch size is `20`.
-1. Run the shell script: `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
-1. Confirm the simulation data exist in `./data/pytorch/CFD`.
+1. Set the preferences for simulations
+   - Specify root directory path and seed indices in [the shell script](./pytorch/script/shell/simulate_cfd_jet.sh), which performs [the pyton script](./pytorch/script/python/simulate_cfd_jet.py) in the Singularity container.
+   - [This pyton script](./pytorch/script/python/simulate_cfd_jet.py) conducts CFD simulations using batch calculations, where the batch size is `20` (i.e., `N_ENSEMBLES = 20`).
+2. Run [the shell script](./pytorch/script/shell/simulate_cfd_jet.sh): `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
+3. Confirm the simulation data exist in `./data/pytorch/CFD/jet01`.
 
 ### Data for Deep Learning
 
