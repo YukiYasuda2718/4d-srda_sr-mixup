@@ -64,6 +64,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
    - The IO latency may be lower because each data (`.npy`) contains 20 simulation results.
    - Splitting into 20 `.npy` files makes the latency higher. 
 3. Confirm the split simulation data exist in `./data/pytorch/CFD/jet02`.
+4. Check `dataset` and `dataloader` using [`check_dataset_dataloader.ipynb`](./pytorch/notebook/paper_experiment/check_dataset_dataloader.ipynb)
 
 ### Deep Learning
 
