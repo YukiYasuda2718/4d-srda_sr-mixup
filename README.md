@@ -19,9 +19,11 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 ## Setup
 
 - Basically, the Singularity containers were used for experiments.
-- The Docker containers have the same environments as in the Singularity containers.
-- `tsubame` means the super-computer at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en)).
-    - Singularity containers can be used on TSUBAME.
+  - At least, 1 GPU board is required.
+- Notes
+  - The Docker containers have the same environments as in the Singularity containers.
+  - `tsubame` means the super-computer at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en)).
+      - Singularity containers can be used on TSUBAME.
 
 ### Docker Containers
 
@@ -38,6 +40,8 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 1. Start singularity containers:
     - The following command is for local environments
 
+- `pytorch_tsubame.sif` is for the super-computer, TSUBAME, at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en))
+
 ```sh
 $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
     pytorch_local.sif jupyter lab \
@@ -47,7 +51,9 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 ## How to Perform Experiments
 
 - The Singularity container (a local environment), `pytorch_local.sif`, is used in the following experiments.
-- On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
+    - We confirmed the following code works on an [NVIDIA A100 40GB PCIe](https://www.nvidia.com/en-us/data-center/a100/).
+- Note
+  - On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
 
 ### CFD Simulations
 
