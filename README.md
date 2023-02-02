@@ -39,25 +39,31 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
     - The following command is for local environments
 
 ```sh
-$ singularity exec --nv --env PYTHONPATH="./pytorch" \
+$ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
     pytorch_local.sif jupyter lab \
     --no-browser --ip=0.0.0.0 --allow-root --LabApp.token='' --port=8888
 ```
 
 ## How to Perform Experiments
 
-- The Singularity container, `pytorch_local.sif`, is used in the following experiments.
+- The Singularity container (a local environment), `pytorch_local.sif`, is used in the following experiments.
 - On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
 
 ### CFD Simulations
 
 1. Set the preferences for simulations
-   - Specify root directory path and seed indices in [the shell script](./pytorch/script/shell/simulate_cfd_jet.sh), which performs [the pyton script](./pytorch/script/python/simulate_cfd_jet.py) in the Singularity container.
-   - [This pyton script](./pytorch/script/python/simulate_cfd_jet.py) conducts CFD simulations using batch calculations, where the batch size is `20` (i.e., `N_ENSEMBLES = 20`).
-2. Run [the shell script](./pytorch/script/shell/simulate_cfd_jet.sh): `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
+   - Specify root directory path and seed indices in [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh), which performs [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) in the Singularity container.
+   - [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) conducts CFD simulations using batch calculations, where the batch size is `20` (i.e., `N_ENSEMBLES = 20`).
+2. Run [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh): `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
 3. Confirm the simulation data exist in `./data/pytorch/CFD/jet01`.
 
 ### Data for Deep Learning
+
+1. Run the Singularity container using `pytorch_local.sif` as described above.
+2. Split the CFD simulation data by running [`split_data_for_io_latency.ipynb`](./pytorch/notebook/paper_experiment/split_data_for_io_latency.ipynb)
+   - The IO latency may be lower because each data (`.npy`) contains 20 simulation results.
+   - Splitting into 20 `.npy` files makes the latency higher. 
+3. Confirm the split simulation data exist in `./data/pytorch/CFD/jet02`.
 
 ### Deep Learning
 
