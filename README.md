@@ -11,8 +11,8 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
   - [CFD Simulations](#cfd-simulations)
   - [Data for Deep Learning](#data-for-deep-learning)
   - [Deep Learning](#deep-learning)
+  - [Evaluation of Deep-Learning Models](#evaluation-of-deep-learning-models)
   - [EnKF (Baseline Model)](#enkf-baseline-model)
-  - [Analysis](#analysis)
 - [Cite](#cite)
 
 
@@ -46,6 +46,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
     pytorch_local.sif jupyter lab \
     --no-browser --ip=0.0.0.0 --allow-root --LabApp.token='' --port=8888
+# $port is arbitrary.
 ```
 
 ## How to Perform Experiments
@@ -77,11 +78,17 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 1. Set the preferences for deep learning
    - Specify root directory path and config path in [train_ml_model.sh](./pytorch/script/shell/train_ml_model.sh).
    - Configurations are stored in [config dir](./pytorch/config/paper_experiment/).
-1. Perform deep learning: `$ ./pytorch/script/shell/train_ml_model.sh`
+2. Perform deep learning: `$ ./pytorch/script/shell/train_ml_model.sh`
+3. Repeat steps 1 and 2 with changing config paths.
+
+### Evaluation of Deep-Learning Models
+
+1. Evaluate trained models using SRDA (i.e., repeating feedback cycles) using [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
+2. Evaluate trained models using test dataloaders (i.e., without feedback cycles) using [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
 
 ### EnKF (Baseline Model)
 
-### Analysis
+
 
 
 ## Cite
