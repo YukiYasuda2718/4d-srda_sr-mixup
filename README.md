@@ -76,8 +76,8 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 1. Set the preferences for deep learning
    - Specify root directory path and config path in [train_ml_model.sh](./pytorch/script/shell/train_ml_model.sh).
-   - Configurations are stored in [](./pytorch/config/paper_experiment/)
-
+   - Configurations are stored in [config dir](./pytorch/config/paper_experiment/).
+1. Perform deep learning: `$ ./pytorch/script/shell/train_ml_model.sh`
 
 ### EnKF (Baseline Model)
 
