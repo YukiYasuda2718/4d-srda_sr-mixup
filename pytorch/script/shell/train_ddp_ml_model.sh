@@ -1,6 +1,7 @@
 #!/bin/bash
 
-ROOT_DIR= # Specify your root directory of this repository.
+# Specify your root directory of this repository in the Singularity container.
+ROOT_DIR=$(pwd)
 
 IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
 SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/train_ddp_ml_model.py"
