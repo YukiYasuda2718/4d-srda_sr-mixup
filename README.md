@@ -18,7 +18,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 ## Setup
 
 - Basically, the Singularity containers were used for experiments.
-  - At least, 1 GPU board is required.
+- At least, 1 GPU board is required.
 - Notes
   - The Docker containers have the same environments as in the Singularity containers.
   - `tsubame` means the super-computer at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en)).
@@ -26,38 +26,37 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 
 ### Docker Containers
 
-1. Install [Docker](https://docs.docker.com/get-started/)
+1. Install [Docker](https://docs.docker.com/get-started/).
 1. Build docker containers: `$ docker compose build`
 1. Start docker containers: `$ docker compose up -d`
 
 ### Singularity Containers
 
-1. Install [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html)
+1. Install [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html).
 1. Build Singularity containers:
     - `$ singularity build -f pytorch_local.sif ./singularity/pytorch/pytorch.def`
     - `$ singularity build -f pytorch_tsubame.sif ./singularity/pytorch_tsubame/pytorch_tsubame.def`
+    - `pytorch_tsubame.sif` is for the super-computer, TSUBAME, at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en))
 1. Start singularity containers:
     - The following command is for local environments
-
-- `pytorch_tsubame.sif` is for the super-computer, TSUBAME, at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en))
 
 ```sh
 $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
     pytorch_local.sif jupyter lab \
     --no-browser --ip=0.0.0.0 --allow-root --LabApp.token='' --port=8888
-# $port is arbitrary.
 ```
 
 ## How to Perform Experiments
 
-- The Singularity container (a local environment), `pytorch_local.sif`, is used in the following experiments.
+- The Singularity container (on a local environment), `pytorch_local.sif`, is used in the following experiments.
   - We confirmed the following code works on an [NVIDIA A100 40GB PCIe](https://www.nvidia.com/en-us/data-center/a100/).
 - Note
   - On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
+  - In deep learning, distributed data parallel (DDP) was used ([`train_ddp_ml_model.py`](./pytorch/script/python/train_ddp_ml_model.py)) on TSUBAME, where four GPUs of TESLA P100 were used.
 
 ### CFD Simulations
 
-1. Set the preferences for simulations
+1. Set the preferences for CFD simulations
    - Specify root directory path and seed indices in [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh), which performs [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) in the Singularity container.
    - [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) conducts CFD simulations using batch calculations, where the batch size is `20` (i.e., `N_ENSEMBLES = 20`).
 2. Run [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh): `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
@@ -67,10 +66,10 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 1. Run the Singularity container using `pytorch_local.sif` as described above.
 2. Split the CFD simulation data by running [`split_data_for_io_latency.ipynb`](./pytorch/notebook/paper_experiment/split_data_for_io_latency.ipynb)
-   - The IO latency may be lower because each data (`.npy`) contains 20 simulation results.
-   - Splitting into 20 `.npy` files makes the latency higher.
+   - The IO latency will be lower because each simulation data (`.npy`) contains 20 simulation results.
+   - Splitting into 20 files makes the latency higher.
 3. Confirm the split simulation data exist in `./data/pytorch/CFD/jet02`.
-4. Check `dataset` and `dataloader` using [`check_dataset_dataloader.ipynb`](./pytorch/notebook/paper_experiment/check_dataset_dataloader.ipynb)
+4. Check `dataset` and `dataloader` by running [`check_dataset_dataloader.ipynb`](./pytorch/notebook/paper_experiment/check_dataset_dataloader.ipynb)
 
 ### Deep Learning
 
@@ -82,8 +81,8 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ### Evaluation of Trained Models
 
-1. Evaluate trained models using SRDA (i.e., repeating feedback cycles) by running [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
-2. Evaluate trained models using test dataloaders (i.e., without feedback cycles) by running [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
+1. Evaluate trained models using SRDA (repeating feedback cycles) by running [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
+2. Evaluate trained models using test dataloaders (without feedback cycles) by running [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
 
 ### Comparison with EnKF (Baseline Model)
 
