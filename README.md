@@ -78,7 +78,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
    - Specify root directory path and config path in [train_ml_model.sh](./pytorch/script/shell/train_ml_model.sh).
    - Configurations are stored in [config dir](./pytorch/config/paper_experiment/).
 2. Perform deep learning: `$ ./pytorch/script/shell/train_ml_model.sh`
-3. Repeat steps 1 and 2 with changing config paths.
+3. Repeat steps 1 and 2 until the experiments of all configurations are done.
 
 ### Evaluation of Trained Models
 
