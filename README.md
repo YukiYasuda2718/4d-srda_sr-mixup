@@ -51,7 +51,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 ## How to Perform Experiments
 
 - The Singularity container (a local environment), `pytorch_local.sif`, is used in the following experiments.
-    - We confirmed the following code works on an [NVIDIA A100 40GB PCIe](https://www.nvidia.com/en-us/data-center/a100/).
+  - We confirmed the following code works on an [NVIDIA A100 40GB PCIe](https://www.nvidia.com/en-us/data-center/a100/).
 - Note
   - On [TSUBAME](https://www.t3.gsic.titech.ac.jp/en), the same code was run using `pytorch_tsubame.sif`.
 
@@ -68,7 +68,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 1. Run the Singularity container using `pytorch_local.sif` as described above.
 2. Split the CFD simulation data by running [`split_data_for_io_latency.ipynb`](./pytorch/notebook/paper_experiment/split_data_for_io_latency.ipynb)
    - The IO latency may be lower because each data (`.npy`) contains 20 simulation results.
-   - Splitting into 20 `.npy` files makes the latency higher. 
+   - Splitting into 20 `.npy` files makes the latency higher.
 3. Confirm the split simulation data exist in `./data/pytorch/CFD/jet02`.
 4. Check `dataset` and `dataloader` using [`check_dataset_dataloader.ipynb`](./pytorch/notebook/paper_experiment/check_dataset_dataloader.ipynb)
 
@@ -92,7 +92,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ## Cite
 
-```
+```bibtex
 @misc{https://doi.org/10.48550/arxiv.2212.03656,
   doi = {10.48550/ARXIV.2212.03656},
   url = {https://arxiv.org/abs/2212.03656},
