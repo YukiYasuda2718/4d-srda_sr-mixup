@@ -303,6 +303,50 @@ def assimilate_with_existing_data(
     lr_ens_model.calc_grid_data()
 
     if return_hr_analysis:
-        return analysis_all
+        return analysis_all, forecast_cov
+    else:
+        return forecast_cov
+
+
+def hr_assimilate_with_existing_data(
+    *,
+    hr_omega: torch.Tensor,
+    hr_ens_model: AbstractCfdModel,
+    obs_matrix: torch.Tensor,
+    obs_noise_std: float,
+    inflation: float,
+    rand_generator: torch.Generator,
+    localization_matrix: torch.Tensor = None,
+    return_hr_analysis: bool = False,
+):
+    assert hr_omega.ndim == 2
+    assert obs_matrix.ndim == 2
+
+    hr_nx, hr_ny = hr_omega.shape
+    assert obs_matrix.shape[1] == hr_nx * hr_ny
+
+    hr_ne, _, _ = hr_ens_model.state_size
+    hr_state = hr_ens_model.omega.reshape(hr_ne, -1)
+
+    obs = obs_matrix.mm(hr_omega.reshape(-1, 1))
+
+    analysis_all, forecast_cov = _assimilate(
+        observation=obs,
+        model_state=hr_state,
+        obs_noise_std=obs_noise_std,
+        obs_matrix=obs_matrix,
+        inflation=inflation,
+        rand_generator=rand_generator,
+        localization_matrix=localization_matrix,
+    )
+
+    analysis_all = analysis_all.reshape(hr_ne, hr_nx, hr_ny)
+
+    t = hr_ens_model.t
+    hr_ens_model.initialize(t0=t, omega0=analysis_all)
+    hr_ens_model.calc_grid_data()
+
+    if return_hr_analysis:
+        return analysis_all, forecast_cov
     else:
         return forecast_cov

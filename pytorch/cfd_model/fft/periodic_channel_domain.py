@@ -17,6 +17,12 @@ def get_wavenumber(idx: int, total_num: int) -> int:
     return idx - total_num
 
 
+def get_grid_index(wavenumber: int, total_num: int) -> int:
+    if wavenumber >= 0:
+        return wavenumber
+    return wavenumber + total_num
+
+
 class TorchFftCalculator(AbstractFftCalculator):
     def __init__(
         self,
