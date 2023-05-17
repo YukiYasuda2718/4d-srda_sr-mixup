@@ -2,10 +2,10 @@ data:
   batch_size: 32
   beta_dist_alpha: 2.0
   beta_dist_beta: 2.0
-  data_dir_name: jet26
+  data_dir_name: jet04
   is_last_obs_missing: true
   lr_kind_names:
-  - lr_omega_no-noise
+    - lr_omega_no-noise
   lr_time_interval: 4
   max_start_time_index: 92
   min_start_time_index: -1
@@ -13,9 +13,9 @@ data:
   obs_noise_std: 0.1
   obs_time_interval: 4
   train_valid_test_ratios:
-  - 0.7
-  - 0.2
-  - 0.1
+    - 0.7
+    - 0.2
+    - 0.1
   use_mixup: false
   use_mixup_init_time: false
   use_observation: true
