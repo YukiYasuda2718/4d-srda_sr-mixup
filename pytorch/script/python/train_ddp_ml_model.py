@@ -68,7 +68,10 @@ def train_and_validate(
         logger.info("Make dataloaders and samplers")
         logger.info("################################\n")
 
-    if config["data"]["data_dir_name"] == "jet02":
+    if (
+        config["data"]["data_dir_name"] == "jet02"
+        or config["data"]["data_dir_name"] == "jet04"
+    ):
         (
             dataloaders,
             samplers,

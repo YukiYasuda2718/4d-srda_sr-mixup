@@ -58,6 +58,10 @@ def _make_dataloaders_vorticity_making_observation_inside_time_series_splitted_w
     world_size: int = None,
     rank: int = None,
     train_valid_test_kinds: typing.List[str] = ["train", "valid", "test"],
+    is_output_only_last: bool = False,
+    is_last_obs_missing: bool = False,
+    min_start_time_index: int = 12,
+    max_start_time_index: int = 96,
     **kwargs,
 ):
     if world_size is not None:
@@ -88,6 +92,10 @@ def _make_dataloaders_vorticity_making_observation_inside_time_series_splitted_w
             use_lr_forecast=use_lr_forecast,
             beta_dist_alpha=beta_dist_alpha,
             beta_dist_beta=beta_dist_beta,
+            is_output_only_last=is_output_only_last,
+            is_last_obs_missing=is_last_obs_missing,
+            min_start_time_index=min_start_time_index,
+            max_start_time_index=max_start_time_index,
         )
 
         if world_size is None or rank is None:

@@ -81,6 +81,10 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         nx: int = 128,
         ny: int = 65,
         max_ensemble: int = 20,
+        is_output_only_last: bool = False,
+        is_last_obs_missing: bool = False,
+        min_start_time_index: int = 12,
+        max_start_time_index: int = 96,
         dtype: torch.dtype = torch.float32,
         **kwargs,
     ):
@@ -113,6 +117,10 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         self.clamp_min = clamp_min
         self.clamp_max = clamp_max
         self.use_gt_clamp = use_ground_truth_clamping
+        self.is_output_only_last = is_output_only_last
+        self.is_last_obs_missing = is_last_obs_missing
+        self.min_start_time_index = min_start_time_index
+        self.max_start_time_index = max_start_time_index
 
         logger.info(f"LR time interval = {self.lr_time_interval}")
         if obs_grid_interval > 0:
@@ -130,6 +138,10 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         logger.info(f"Use clamp for ground truth = {self.use_gt_clamp}")
         logger.info(f"Clamp: min = {self.clamp_min}, max = {self.clamp_max}")
         logger.info(f"missing value = {self.missing_value}")
+        logger.info(f"is_output_only_last = {self.is_output_only_last}")
+        logger.info(f"is_last_obs_missing = {self.is_last_obs_missing}")
+        logger.info(f"min_start_time_index = {self.min_start_time_index}")
+        logger.info(f"max_start_time_index = {self.max_start_time_index}")
 
         self._set_hr_file_paths(data_dirs)
         self.str_seeds = list(
@@ -176,18 +188,24 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
 
         extracted_paths = []
         for path in hr_file_paths:
-            if "start12" in path:
-                continue
-            if "start08" in path:
-                continue
-            if "start04" in path:
-                continue
-            if "start00" in path:
-                continue
             if not path.endswith("_00.npy"):
                 continue
 
-            extracted_paths.append(path)
+            grps = re.match(
+                r"seed(\d+)_start(\d+)_end", os.path.basename(path)
+            ).groups()
+
+            start_idx = int(grps[1])
+            if start_idx >= self.max_start_time_index:
+                continue
+
+            is_contained = True
+            for _idx in range(self.min_start_time_index+1):
+                if f"start{_idx:02}_" in path:
+                    is_contained = False
+                    break
+            if is_contained:
+                extracted_paths.append(path)
 
         self.hr_file_paths = extracted_paths
 
@@ -300,6 +318,13 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         # time, channel, x, y --> time, channel, y, x dims
         return ret.permute(0, 1, 3, 2)
 
+    def get_pair_of_lr(
+        self, path_idx: int, ens_idx: int = None
+    ) -> typing.Tuple[torch.Tensor, torch.Tensor]:
+
+        target_lr, source_lr, _ = self._load_np_data(path_idx, ens_idx)
+        return target_lr, source_lr
+
     def _getitem(
         self, path_idx: int, ens_idx: int = None
     ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -317,6 +342,7 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         gt = self._preprocess(gt, use_clipping=self.use_gt_clamp)
 
         if self.use_obs:
+            is_obs = ~torch.isnan(obs)
             obs = torch.nan_to_num(obs, nan=self.missing_value)
         else:
             obs = torch.full_like(obs, fill_value=self.missing_value)
@@ -325,7 +351,7 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
             source_prob = np.random.beta(
                 a=self.beta_dist_alpha, b=self.beta_dist_beta, size=1
             )[0]
-            logger.debug(f"source_prob = {source_prob}")
+            logger.debug(f"similar source_prob = {source_prob}")
 
             if self.use_mixup_init_time:
                 lr = target_lr
@@ -336,9 +362,15 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         else:
             lr = target_lr
 
+        if self.is_last_obs_missing:
+            obs[-1] = self.missing_value
+
         lr = lr[:: self.lr_time_interval]
         if not self.use_lr_forecast:
             lr = torch.full_like(lr, fill_value=self.missing_value)
+
+        if self.is_output_only_last:
+            return lr[-1], obs[-1], is_obs[-1], gt[-1]
 
         return lr, obs, gt
 
@@ -348,7 +380,11 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
         return self._getitem(path_idx=idx)
 
     def get_specified_item(
-        self, i_batch: int, i_cycle: int, start_time_index: int = 16
+        self,
+        i_batch: int,
+        i_cycle: int,
+        start_time_index: int = 16,
+        is_specified_end: bool = True,
     ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
         dict_hr_paths = OrderedDict(
@@ -373,7 +409,10 @@ class DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling(Dataset):
 
         path = None
         for p in target_paths:
-            if f"end{i_cycle + start_time_index:02}" in p:
+            if is_specified_end and f"end{i_cycle + start_time_index:02}" in p:
+                path = p
+                break
+            if (not is_specified_end) and f"start{i_cycle + start_time_index:02}" in p:
                 path = p
                 break
         print(path)
