@@ -4,7 +4,7 @@
 ROOT_DIR=$(pwd)
 
 IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
-SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/simulate_cfd_jet.py"
+SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/simulate_cfd_jet_for_making_analysis_train_data.py"
 
 # Change seed indices if necessary.
 I_SEED_START=0
