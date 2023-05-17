@@ -59,7 +59,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 - Run the following scripts:
   - [`./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh)
   - [`./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh)
-  - [`simulate_cfd_jet_uhr_jet.sh`](./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh)
+  - [`./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh`](./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh)
 
 ### Data for Deep Learning
 
