@@ -44,11 +44,11 @@ logger.setLevel(INFO)
 ROOT_DIR = str((pathlib.Path(os.environ["PYTHONPATH"]) / "..").resolve())
 DEVICE = "cuda"
 
-CFD_DIR_NAME = "jet12"
+CFD_DIR_NAME = "jet02"
 TRAIN_VALID_TEST_RATIOS = [0.7, 0.2, 0.1]
 
 INITIAL_TIME_INDEX = 0
-OBS_GRID_INTERVALS = [4, 6, 8, 10, 12]
+OBS_GRID_INTERVALS = [4, 6, 8, 12]
 SEED = 999
 INFLATION = 1.0
 
