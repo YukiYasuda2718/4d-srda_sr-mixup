@@ -9,7 +9,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
   - [Singularity Containers](#singularity-containers)
 - [How to Perform Experiments](#how-to-perform-experiments)
   - [CFD Simulations](#cfd-simulations)
-  - [Data for Deep Learning](#data-for-deep-learning)
+  - [Data Preparation](#data-preparation)
   - [Training and Tuning](#training-and-tuning)
   - [Evaluation](#evaluation)
 - [Cite](#cite)
@@ -61,7 +61,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
   - [`./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh)
   - [`./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh`](./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh)
 
-### Data for Deep Learning
+### Data Preparation
 
 - Run the following notebook on JupyterLab: [`split_npy.ipynb`](./pytorch/notebook/split_npy.ipynb)
 
@@ -74,7 +74,7 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 - EnKF-SR
   - [`./pytorch/script/shell/tune_enkf_sr.sh`](./pytorch/script/shell/tune_enkf_sr.sh)
 - EnKF-HR
-  - [generate_addive_inflation_cov.ipynb](./pytorch/notebook/generate_addive_inflation_cov.ipynb)
+  - [generate_additive_inflation_cov.ipynb](./pytorch/notebook/generate_additive_inflation_cov.ipynb)
   - [`./pytorch/script/shell/tune_enkf_hr.sh`](./pytorch/script/shell/tune_enkf_hr.sh)
 
 ### Evaluation
