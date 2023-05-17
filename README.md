@@ -55,9 +55,11 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ### CFD Simulations
 
+- In each script, a number of simulations must be specified.
 - Run the following scripts:
   - [`./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh)
   - [`./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh)
+  - [`simulate_cfd_jet_uhr_jet.sh`](./pytorch/script/shell/simulate_cfd_jet_uhr_jet.sh)
 
 ### Data for Deep Learning
 
@@ -65,13 +67,14 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ### Training and Tuning
 
-- In each script, configuration must be specified.
+- In each script, a configuration must be specified.
 - ST-SRDA
   - [`./pytorch/script/shell/train_ddp_ml_model.sh`](./pytorch/script/shell/train_ddp_ml_model.sh) (for multiple GPUs)
   - [`./pytorch/script/shell/train_ml_model.sh`](./pytorch/script/shell/train_ml_model.sh) (for a single GPU)
 - EnKF-SR
   - [`./pytorch/script/shell/tune_enkf_sr.sh`](./pytorch/script/shell/tune_enkf_sr.sh)
 - EnKF-HR
+  - [generate_addive_inflation_cov.ipynb](./pytorch/notebook/generate_addive_inflation_cov.ipynb)
   - [`./pytorch/script/shell/tune_enkf_hr.sh`](./pytorch/script/shell/tune_enkf_hr.sh)
 
 ### Evaluation
