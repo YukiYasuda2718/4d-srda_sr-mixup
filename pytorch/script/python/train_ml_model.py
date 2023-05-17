@@ -82,7 +82,10 @@ if __name__ == "__main__":
         logger.info("Make dataloadars")
         logger.info("*********************************************************\n")
 
-        if config["data"]["data_dir_name"] == "jet02":
+        if (
+            config["data"]["data_dir_name"] == "jet02"
+            or config["data"]["data_dir_name"] == "jet04"
+        ):
             (
                 dataloaders,
                 _,
