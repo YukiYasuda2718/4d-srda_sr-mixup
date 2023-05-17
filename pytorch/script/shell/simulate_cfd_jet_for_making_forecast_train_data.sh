@@ -1,6 +1,6 @@
 #!/bin/bash
 
- # Specify your root directory of this repository in the Singularity container.
+# Specify your root directory of this repository in the Singularity container.
 ROOT_DIR=$(pwd)
 
 IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
