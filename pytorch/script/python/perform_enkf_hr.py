@@ -42,10 +42,10 @@ logger.setLevel(INFO)
 ROOT_DIR = str((pathlib.Path(os.environ["PYTHONPATH"]) / "..").resolve())
 DEVICE = "cuda"
 
-CFD_DIR_NAME = "jet12"
+CFD_DIR_NAME = "jet02"
 TRAIN_VALID_TEST_RATIOS = [0.7, 0.2, 0.1]
 
-OBS_GRID_INTERVALS = [6, 8, 10, 12]
+OBS_GRID_INTERVALS = [4, 6, 8, 12]
 SEED = 31415
 INFLATION = 1.0
 
@@ -284,7 +284,7 @@ if __name__ == "__main__":
 
     set_seeds(SEED, use_deterministic=True)
 
-    cov_file_path = f"{ROOT_DIR}/data/pytorch/hr_sys_noise_covs.pickle"
+    cov_file_path = f"{ROOT_DIR}/data/pytorch/sys_noise_covs.pickle"
     all_covs = read_pickle(cov_file_path)
     loc = torch.zeros(all_covs.shape[-1], dtype=torch.float64)
     sys_noise_generators = [MultivariateNormal(loc, cov) for cov in all_covs]
