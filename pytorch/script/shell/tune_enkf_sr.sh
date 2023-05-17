@@ -7,7 +7,7 @@ IMAGE_PATH="${ROOT_DIR}/pytorch_local.sif"
 SCRIPT_PATH="${ROOT_DIR}/pytorch/script/python/perform_enkf_sr.py"
 
 # Change config path if necessary.
-CONFIG_PATH="${ROOT_DIR}/pytorch/config/tune_EnKF_SR/lr1e-01_inf0e+00_nf0e+00_op0p0.yml"
+CONFIG_PATH="${ROOT_DIR}/pytorch/config/tune_EnKF_SR/lr1e-01_inf1e-01_nf1e-01_op0p1.yml"
 
 echo "image path = ${IMAGE_PATH}"
 echo "script path = ${SCRIPT_PATH}"
