@@ -1,241 +1,22 @@
-import itertools
 import os
-import random
 import sys
-import typing
-from logging import INFO, WARNING, getLogger
+import time
+from logging import getLogger
 
 import numpy as np
 import torch
 from cfd_model.cfd.periodic_channel_domain import TorchSpectralModel2D
+from cfd_model.enkf.observation_matrix import HrObservationMatrixGenerator
+from cfd_model.enkf.sr_enkf import assimilate_with_existing_data
 from cfd_model.interpolator.torch_interpolator import interpolate
-from src.dataloader import (
-    make_dataloaders_vorticity_making_observation_inside_time_series_splitted,
-)
-from src.dataset import DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling
-from src.model_maker import make_model
+from src.utils import read_pickle
+
+logger = getLogger()
 
 if "ipykernel" in sys.modules:
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
-
-
-logger = getLogger()
-
-
-def get_testdataset(
-    root_dir: str, config: dict
-) -> DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling:
-    logger.setLevel(WARNING)
-    (
-        dataloaders,
-        _,
-    ) = make_dataloaders_vorticity_making_observation_inside_time_series_splitted(
-        root_dir=root_dir, config=config, train_valid_test_kinds=["test"]
-    )
-    logger.setLevel(INFO)
-
-    return dataloaders["test"].dataset
-
-
-def get_testdataloader(
-    root_dir: str, config: dict
-) -> torch.utils.data.dataloader.DataLoader:
-    logger.setLevel(WARNING)
-    (
-        dataloaders,
-        _,
-    ) = make_dataloaders_vorticity_making_observation_inside_time_series_splitted(
-        root_dir=root_dir, config=config, train_valid_test_kinds=["test"]
-    )
-    logger.setLevel(INFO)
-
-    return dataloaders["test"]
-
-
-def make_models(config: dict, weight_path: str, cfd_config: dict):
-    logger.setLevel(WARNING)
-
-    sr_model = make_model(config).to(cfd_config["device"])
-    sr_model.load_state_dict(torch.load(weight_path, map_location=cfd_config["device"]))
-    _ = sr_model.eval()
-
-    lr_model = TorchSpectralModel2D(**cfd_config)
-
-    srda_model = TorchSpectralModel2D(**cfd_config)
-
-    logger.setLevel(INFO)
-
-    return sr_model, lr_model, srda_model
-
-
-def initialize_models(
-    t0: float,
-    hr_omega0: torch.Tensor,
-    lr_forcing,
-    lr_model,
-    srda_model,
-    *,
-    n_ens,
-    hr_nx,
-    hr_ny,
-    lr_nx,
-    lr_ny,
-    **kwargs,
-):
-
-    assert hr_omega0.shape == (n_ens, hr_nx, hr_ny)
-    omega0 = interpolate(hr_omega0, lr_nx, lr_ny, "bicubic")
-
-    lr_ens_forcing = torch.broadcast_to(lr_forcing, (n_ens, lr_nx, lr_ny)).clone()
-    assert omega0.shape == lr_ens_forcing.shape == (n_ens, lr_nx, lr_ny)
-
-    lr_model.initialize(t0=t0, omega0=omega0, forcing=lr_ens_forcing)
-    lr_model.calc_grid_data()
-
-    srda_model.initialize(t0=t0, omega0=omega0, forcing=lr_ens_forcing)
-    srda_model.calc_grid_data()
-
-
-def read_all_hr_omegas(
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-):
-    paths = test_dataset.hr_file_paths
-    return _read_all_hr_omegas(paths)
-
-
-def read_all_hr_omegas_with_combining(
-    hr_file_paths: typing.List[str], max_ensenbles: int = 20
-):
-    key_func = lambda p: os.path.basename(os.path.dirname(p))
-    dict_hr_paths = {
-        k: sorted(g) for k, g in itertools.groupby(hr_file_paths, key_func)
-    }
-
-    all_hr_omegas = []
-
-    for key, paths in tqdm(dict_hr_paths.items(), total=len(dict_hr_paths)):
-        hr_omegas = []
-
-        for i, p in enumerate(paths):
-            all_data = []
-            for j in range(max_ensenbles):
-                data = np.load(p.replace("_00.npy", f"_{j:02}.npy"))
-                if i > 0:
-                    # skip the first time index, except for the first dataset.
-                    data = data[1:]
-                all_data.append(data)
-            # Stack along a new dim, i.e., batch dim
-            hr_omegas.append(np.stack(all_data, axis=0))
-
-        # Concat along time dim
-        hr_omegas = np.concatenate(hr_omegas, axis=1)
-        all_hr_omegas.append(hr_omegas)
-
-    # Concat along batch dim
-    return torch.from_numpy(np.concatenate(all_hr_omegas, axis=0))
-
-
-def _read_all_hr_omegas(paths: list):
-    key_func = lambda p: os.path.basename(os.path.dirname(p))
-    dict_hr_paths = {k: sorted(g) for k, g in itertools.groupby(paths, key_func)}
-
-    all_hr_omegas = []
-    for key, paths in tqdm(dict_hr_paths.items(), total=len(dict_hr_paths)):
-        hr_omegas = []
-        for i, p in enumerate(paths):
-            data = np.load(p)
-            if i > 0:
-                # skip the first time index, except for the first dataset.
-                data = data[:, 1:]
-            hr_omegas.append(data)
-
-        # Concat along time dim
-        hr_omegas = np.concatenate(hr_omegas, axis=1)
-        all_hr_omegas.append(hr_omegas)
-
-    # Concat along batch dim
-    return torch.from_numpy(np.concatenate(all_hr_omegas, axis=0))
-
-
-def read_all_lr_omegas(
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-    lr_kind: str = "lr_omega_no-noise",
-):
-    paths = test_dataset.hr_file_paths
-    key_func = lambda p: os.path.basename(os.path.dirname(p))
-    dict_hr_paths = {k: sorted(g) for k, g in itertools.groupby(paths, key_func)}
-
-    all_lr_omegas = []
-    for key, paths in tqdm(dict_hr_paths.items(), total=len(dict_hr_paths)):
-        lr_omegas = []
-        for i, p in enumerate(paths):
-            p = p.replace("hr_omega", lr_kind)
-            assert lr_kind in p
-
-            data = np.load(p)
-            # skip the last time index, except for the last dataset.
-            if i != len(paths) - 1:
-                data = data[:, :-1]
-                assert data.shape[1] == 4
-            lr_omegas.append(data)
-
-        # Concat along time dim
-        lr_omegas = np.concatenate(lr_omegas, axis=1)
-        all_lr_omegas.append(lr_omegas)
-
-    # Concat along batch dim
-    return torch.from_numpy(np.concatenate(all_lr_omegas, axis=0))
-
-
-def get_observation_with_noise(
-    hr_omega: torch.Tensor,
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-    *,
-    n_ens,
-    hr_nx,
-    hr_ny,
-    lr_nx,
-    lr_ny,
-    **kwargs,
-) -> torch.Tensor:
-
-    assert hr_omega.ndim == 4  # ens, time, x, y dims
-    assert hr_omega.shape[0] == n_ens
-    assert hr_omega.shape[2] == hr_nx
-    assert hr_omega.shape[3] == hr_ny
-
-    is_obses = []
-    for _ in range(n_ens):
-        i = random.randint(0, len(test_dataset.is_obses) - 1)
-        _is_obs = test_dataset.is_obses[i]
-        assert _is_obs.shape == (hr_nx, hr_ny)
-
-        # to the same dims of time, x, and y
-        _is_obs = torch.broadcast_to(_is_obs, size=hr_omega.shape[1:])
-        is_obses.append(_is_obs)
-
-    is_obses = torch.stack(is_obses, dim=0)
-    assert is_obses.shape == hr_omega.shape
-
-    hr_obsrv = torch.full_like(hr_omega, np.nan)
-    hr_obsrv = torch.where(
-        is_obses > 0,
-        hr_omega,
-        hr_obsrv,
-    )
-
-    if test_dataset.obs_noise_std <= 0:
-        logger.info("No observation noise.")
-        return hr_obsrv
-
-    noise = np.random.normal(
-        loc=0, scale=test_dataset.obs_noise_std, size=hr_obsrv.shape
-    )
-    logger.info(f"Observation noise std = {test_dataset.obs_noise_std}")
-
-    return hr_obsrv + torch.from_numpy(noise)
 
 
 def append_zeros(data: torch.Tensor):
@@ -294,94 +75,192 @@ def inv_preprocess(data: torch.Tensor, biases: torch.Tensor, scales: torch.Tenso
     return data * scales + biases
 
 
-def make_preprocessed_lr(
-    lr_forecast: torch.Tensor,
-    last_omega0: torch.Tensor,
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
+def extract_observation(
     *,
-    assimilation_period,
-    n_ens,
-    lr_nx,
-    lr_ny,
-    device,
-    **kwargs,
+    obs_matrix_generator: HrObservationMatrixGenerator,
+    hr_omega: torch.Tensor,
+    obs_interval: int,
+    hr_nx: int,
+    hr_ny: int,
 ):
+    proj_matrix = obs_matrix_generator.generate_projection_matrix()
 
-    lr = torch.stack(lr_forecast[-(assimilation_period + 1) :], dim=0)
-    if last_omega0 is not None:
-        lr[0, ...] = last_omega0
-        logger.debug("last omega is added.")
-    lr = lr[:: test_dataset.lr_time_interval]
+    _ones = torch.ones(proj_matrix.shape[1], dtype=proj_matrix.dtype)
+    is_obs = proj_matrix.mm(_ones[:, None]).reshape(hr_nx, hr_ny)
+    is_obs = is_obs.to(hr_omega.device)
 
-    return preprocess(
-        data=lr,
-        biases=test_dataset.vorticity_bias,
-        scales=test_dataset.vorticity_scale,
-        clamp_max=test_dataset.clamp_max,
-        clamp_min=test_dataset.clamp_min,
-        n_ens=n_ens,
-        assimilation_period=None,  # not used
-        ny=lr_ny,
-        nx=lr_nx,
-        device=device,
-    )
+    assert is_obs.shape == hr_omega.shape
+
+    return torch.where(is_obs > 0, hr_omega, torch.full_like(hr_omega, torch.nan))
 
 
-def make_preprocessed_obs(
-    hr_obs: torch.Tensor,
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
+def perform_srda_and_enkf(
     *,
-    assimilation_period,
-    n_ens,
-    lr_nx,
-    lr_ny,
-    device,
-    **kwargs,
+    sr_model: torch.nn.Module,
+    lr_model: TorchSpectralModel2D,
+    srda_model: TorchSpectralModel2D,
+    lr_ens_model: TorchSpectralModel2D,
+    n_cycles: int,
+    assimilation_period: int,
+    offset: int,
+    hr_omega: torch.Tensor,
+    obs_matrix_generator: HrObservationMatrixGenerator,
+    torch_rand_generator: torch.Generator,
+    localization_matrix: torch.Tensor,
+    sys_noise_generator: torch.distributions.distribution.Distribution,
+    test_dataset: torch.utils.data.Dataset,
+    hr_nx: int,
+    hr_ny: int,
+    lr_ne: int,
+    lr_nx: int,
+    lr_ny: int,
+    lr_nt: int,
+    lr_dt: float,
+    obs_interval: int,
+    inflation: float,
+    device: str,
+    hide_progressbar: bool = True,
+    sr_interpolator: torch.nn.Module = None,
 ):
+    # Add ensemble dim
+    biases, scales = test_dataset.biases[None, ...], test_dataset.scales[None, ...]
 
-    obs = torch.stack(hr_obs[-(assimilation_period + 1) :], dim=0)
+    clamp_min, clamp_max = test_dataset.clamp_min, test_dataset.clamp_max
+    missing_value = test_dataset.missing_value
+    obs_noise_std = test_dataset.obs_noise_std
+    np_rng = test_dataset.np_rng
 
-    obs = preprocess(
-        data=obs,
-        biases=test_dataset.vorticity_bias,
-        scales=test_dataset.vorticity_scale,
-        clamp_max=test_dataset.clamp_max,
-        clamp_min=test_dataset.clamp_min,
-        n_ens=n_ens,
-        assimilation_period=None,  # not used
-        ny=lr_ny,
-        nx=lr_nx,
-        device=device,
-    )
+    ts, hr_obs, lr_omega, lr_forecast, sr_analysis, lr_enkf = [], [], [], [], [], []
 
-    return torch.nan_to_num(obs, nan=test_dataset.missing_value)
+    last_omega0 = None
 
+    for i_cycle in tqdm(range(n_cycles + 1 - offset), disable=hide_progressbar):
+        logger.debug(f"\nStart: i_cycle = {i_cycle}, t = {lr_model.t:.2f}")
 
-def make_invprocessed_sr(
-    preds: torch.Tensor,
-    test_dataset: DatasetMakingObsInsideTimeseriesSplittedWithMixupRandomSampling,
-    *,
-    assimilation_period,
-    n_ens,
-    hr_nx,
-    hr_ny,
-    **kwargs,
-):
-    sr = inv_preprocess(
-        preds, test_dataset.vorticity_bias, test_dataset.vorticity_scale
-    )
+        # Make observations
+        hr_gt = hr_omega[0, i_cycle]
+        obs_matrix = obs_matrix_generator.generate_obs_matrix(
+            nx=hr_nx, ny=hr_ny, obs_interval=obs_interval
+        )
+        obs = extract_observation(
+            obs_matrix_generator=obs_matrix_generator,
+            hr_omega=hr_gt,
+            obs_interval=obs_interval,
+            hr_nx=hr_nx,
+            hr_ny=hr_ny,
+        )
+        obs = obs[None, ...]  # Add batch dim
 
-    # Delete channel dim
-    sr = sr.squeeze(2)
+        ts.append(lr_model.t)
+        lr_omega.append(lr_model.omega.cpu().clone())
+        lr_forecast.append(srda_model.omega.cpu().clone())
 
-    # ens, time, y, x -> time, ens, x, y
-    sr = append_zeros(sr.permute(1, 0, 3, 2))
+        if i_cycle % assimilation_period == 0:
+            p = 100 * torch.sum(obs_matrix).item() / (hr_nx * hr_ny)
+            logger.debug(f"Observation grid ratio = {p} %")
+            hr_obs.append(obs)
+        else:
+            hr_obs.append(torch.full_like(obs, torch.nan))
 
-    assert sr.shape == (
-        assimilation_period + 1,
-        n_ens,
-        hr_nx,
-        hr_ny,
-    )
+        if i_cycle > 0 and i_cycle % assimilation_period == 0:
+            _ = assimilate_with_existing_data(
+                hr_omega=hr_gt.to(torch.float64).to(device),
+                lr_ens_model=lr_ens_model,
+                obs_matrix=obs_matrix.to(torch.float64).to(device),
+                obs_noise_std=obs_noise_std,
+                inflation=inflation,
+                rand_generator=torch_rand_generator,
+                localization_matrix=localization_matrix,
+                interpolator=sr_interpolator,
+                bias=biases.squeeze().item(),
+                scale=scales.squeeze().item(),
+            )
+            logger.debug(f"EnKF Assimilation at i = {i_cycle}")
 
-    return sr
+        lr_enkf.append(lr_ens_model.omega.cpu().clone())
+
+        if i_cycle % assimilation_period == 0:
+            if i_cycle > 0 and inflation != 1.0:
+                continue
+            _noise = sys_noise_generator.sample([lr_ne]).reshape(lr_ne, lr_nx, lr_ny)
+            _noise = _noise - torch.mean(_noise, dim=0, keepdims=True)
+            _omega = lr_ens_model.omega + _noise.to(device)
+            lr_ens_model.initialize(t0=lr_ens_model.t, omega0=_omega)
+            lr_ens_model.calc_grid_data()
+            logger.debug(f"Add system nosize at i_cycle = {i_cycle}")
+
+        if i_cycle > 0 and i_cycle % assimilation_period == 0:
+
+            lr = torch.stack(lr_forecast[-(assimilation_period + 1) :], dim=0)
+            if last_omega0 is not None:
+                lr[0, ...] = last_omega0
+
+            x = preprocess(
+                data=lr,
+                biases=biases,
+                scales=scales,
+                clamp_max=clamp_max,
+                clamp_min=clamp_min,
+                n_ens=1,
+                assimilation_period=assimilation_period,
+                ny=lr_ny,
+                nx=lr_nx,
+                device=device,
+            )
+
+            obs = torch.stack(hr_obs[-(assimilation_period + 1) :], dim=0)
+            noise = np_rng.normal(loc=0, scale=obs_noise_std, size=obs.shape)
+            obs = obs + noise
+
+            o = preprocess(
+                data=obs,
+                biases=biases,
+                scales=scales,
+                clamp_max=clamp_max,
+                clamp_min=clamp_min,
+                n_ens=1,
+                assimilation_period=assimilation_period,
+                ny=hr_ny,
+                nx=hr_nx,
+                device=device,
+            )
+            o = torch.nan_to_num(o, nan=missing_value)
+
+            start_time = time.time()
+            with torch.no_grad():
+                sr = sr_model(x, o).detach().cpu().clone()
+                sr = inv_preprocess(sr, biases, scales)
+            logger.debug(f"Elapsed time = {time.time() - start_time}")
+
+            # Delete channel dim
+            sr = sr.squeeze(2)
+
+            # ens, time, y, x -> time, ens, x, y
+            sr = append_zeros(sr.permute(1, 0, 3, 2))
+            assert sr.shape == (assimilation_period + 1, 1, hr_nx, hr_ny)
+
+            last_omega0 = interpolate(sr[-1, :], nx=lr_nx, ny=lr_ny)
+            srda_model.initialize(t0=srda_model.t, omega0=last_omega0)
+
+            i_start = 0 if len(sr_analysis) == 0 else 1
+            for it in range(i_start, sr.shape[0]):
+                sr_analysis.append(sr[it])
+
+            logger.debug(f"SR Assimilation at i = {i_cycle}")
+
+        lr_model.time_integrate(dt=lr_dt, nt=lr_nt, hide_progress_bar=True)
+        lr_model.calc_grid_data()
+
+        srda_model.time_integrate(dt=lr_dt, nt=lr_nt, hide_progress_bar=True)
+        srda_model.calc_grid_data()
+
+        lr_ens_model.time_integrate(dt=lr_dt, nt=lr_nt, hide_progress_bar=True)
+        lr_ens_model.calc_grid_data()
+
+    # Stack along time dim
+    lr_omega = torch.stack(lr_omega, dim=1)
+    lr_enkf = torch.stack(lr_enkf, dim=1)
+    hr_obsrv = torch.stack(hr_obs, dim=1)
+    sr_analysis = torch.stack(sr_analysis, dim=1)
+
+    return lr_omega, lr_enkf, hr_obsrv, sr_analysis
