@@ -239,6 +239,7 @@ class ConvTransformerSrDaNet(nn.Module):
         logger.info(f"Sequence length = {self.sequence_length}")
         logger.info(f"Input sampling interval = {self.input_sampling_interval}")
         logger.info(f"Input sequence length = {self.input_sequence_length}")
+        logger.info(f"bias: {bias}")
 
         self.scale_factor = scale_factor
         self.lr_x_size = lr_x_size
@@ -357,6 +358,47 @@ class ConvTransformerSrDaNet(nn.Module):
             self.hr_y_size,
             self.hr_x_size,
         )
+
+    def get_obs_feature(
+        self, xs_org: torch.Tensor, obs_org: torch.Tensor, encoder_block: int = 0
+    ) -> torch.Tensor:
+        assert xs_org.shape[1:] == (
+            self.input_sequence_length,
+            self.in_channels,
+            self.lr_y_size,
+            self.lr_x_size,
+        )
+        assert obs_org.shape[1:] == (
+            self.sequence_length,
+            self.in_channels,
+            self.hr_y_size,
+            self.hr_x_size,
+        )
+
+        # Subsample to make timesteps lr.
+        obs = obs_org[:, :: self.input_sampling_interval]
+
+        # Interpolate to hr grid space, while timesteps remain.
+        xs = xs_org.permute(0, 2, 1, 3, 4)  # exchange channel and time dim
+        size = (self.input_sequence_length, self.hr_y_size, self.hr_x_size)
+        xs = F.interpolate(
+            xs,
+            size=size,
+            mode="nearest",
+        )
+        xs = xs.permute(0, 2, 1, 3, 4)
+
+        # Reshape xs and obs to apply the same encoder at each time step
+        xs = xs.view(-1, self.in_channels, self.hr_y_size, self.hr_x_size)
+        obs = obs.reshape(-1, self.in_channels, self.hr_y_size, self.hr_x_size)
+
+        feat_o = self.o_feat_extractor(obs)
+
+        latent_o = feat_o
+        for i in range(encoder_block):
+            latent_o = self.encoder.o_encoder[i](latent_o)
+
+        return feat_o, latent_o
 
     def forward(self, xs_org: torch.Tensor, obs_org: torch.Tensor) -> torch.Tensor:
         assert xs_org.shape[1:] == (
