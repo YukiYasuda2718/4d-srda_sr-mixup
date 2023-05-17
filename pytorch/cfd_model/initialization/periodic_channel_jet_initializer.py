@@ -168,6 +168,106 @@ def calc_init_perturbation_hr_omegas(
     return torch.tensor(omega, dtype=dtype)
 
 
+def calc_init_perturbation_hr_omegas_for_only_low_wavenumber(
+    *,
+    nx: int,
+    ny: int,
+    ne: int,
+    noise_amp: float,
+    lr_kx_cutoff: int,
+    lr_ky_cutoff: int,
+    seed: int = 42,
+    dtype: torch.dtype = torch.float64,
+) -> torch.Tensor:
+
+    logger.info(f"Seed in making init perturbation = {seed}")
+    logger.info(f"lr_kx_cutoff = {lr_kx_cutoff}, lr_ky_cutoff = {lr_ky_cutoff}")
+
+    x = np.linspace(0, 2 * np.pi, num=nx, endpoint=False)
+    y = np.linspace(0, np.pi, num=ny, endpoint=True)
+    x, y = np.meshgrid(x, y, indexing="ij")
+
+    x = np.broadcast_to(x, (ne, nx, ny))
+    y = np.broadcast_to(y, (ne, nx, ny))
+
+    max_kx = nx // 3
+    max_ky = ny // 3
+    logger.info(f"max: kx = {max_kx}, ky = {max_ky}")
+
+    np.random.seed(seed)
+    lst_amp = np.random.randn(ne, 2 * max_kx + 1, 2 * max_ky + 1) * noise_amp
+    lst_phs = np.random.randn(ne, 2 * max_kx + 1, 2 * max_ky + 1) * np.pi
+
+    omega = np.zeros((ne, nx, ny), dtype=np.float64)
+
+    for i, kx in tqdm(enumerate(range(-max_kx, max_kx + 1)), total=2 * max_kx + 1):
+        if kx == 0 or abs(kx) > lr_kx_cutoff:
+            continue
+        for j, ky in enumerate(range(-max_ky, max_ky + 1)):
+            if ky == 0 or abs(ky) > lr_ky_cutoff:
+                continue
+            amp = lst_amp[:, i, j]
+            phs = lst_phs[:, i, j]
+            amp = amp[:, None, None]  # add x and y dim
+            phs = phs[:, None, None]
+
+            omega += amp * np.sin(kx * x + ky * y + phs)
+
+    assert omega.shape == (ne, nx, ny)
+
+    return torch.tensor(omega, dtype=dtype)
+
+
+def calc_init_perturbation_hr_omegas_for_only_high_wavenumbers(
+    *,
+    nx: int,
+    ny: int,
+    ne: int,
+    noise_amp: float,
+    lr_kx_cutoff: int,
+    lr_ky_cutoff: int,
+    seed: int = 42,
+    dtype: torch.dtype = torch.float64,
+    **kwargs,
+) -> torch.Tensor:
+
+    logger.info(f"Seed in making init perturbation = {seed}")
+
+    x = np.linspace(0, 2 * np.pi, num=nx, endpoint=False)
+    y = np.linspace(0, np.pi, num=ny, endpoint=True)
+    x, y = np.meshgrid(x, y, indexing="ij")
+
+    x = np.broadcast_to(x, (ne, nx, ny))
+    y = np.broadcast_to(y, (ne, nx, ny))
+
+    max_kx = nx // 3
+    max_ky = ny // 3
+    logger.info(f"max: kx = {max_kx}, ky = {max_ky}")
+
+    np.random.seed(seed)
+    lst_amp = np.random.randn(ne, 2 * max_kx + 1, 2 * max_ky + 1) * noise_amp
+    lst_phs = np.random.randn(ne, 2 * max_kx + 1, 2 * max_ky + 1) * np.pi
+
+    omega = np.zeros((ne, nx, ny), dtype=np.float64)
+
+    for i, kx in tqdm(enumerate(range(-max_kx, max_kx + 1)), total=2 * max_kx + 1):
+        if kx == 0 or kx <= lr_kx_cutoff:
+            continue
+        for j, ky in enumerate(range(-max_ky, max_ky + 1)):
+            if ky == 0 or ky <= lr_ky_cutoff:
+                continue
+            amp = lst_amp[:, i, j]
+            phs = lst_phs[:, i, j]
+            amp = amp[:, None, None]  # add x and y dim
+            phs = phs[:, None, None]
+
+            omega += amp * np.sin(kx * x + ky * y + phs)
+
+    assert omega.shape == (ne, nx, ny)
+
+    return torch.tensor(omega, dtype=dtype)
+
+
 def calc_ens_perturbation_omega(
     *,
     max_kx: int,
