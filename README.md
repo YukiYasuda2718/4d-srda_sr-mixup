@@ -10,9 +10,8 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 - [How to Perform Experiments](#how-to-perform-experiments)
   - [CFD Simulations](#cfd-simulations)
   - [Data for Deep Learning](#data-for-deep-learning)
-  - [Deep Learning](#deep-learning)
-  - [Evaluation of Trained Models](#evaluation-of-trained-models)
-  - [Comparison with EnKF (Baseline Model)](#comparison-with-enkf-baseline-model)
+  - [Training and Tuning](#training-and-tuning)
+  - [Evaluation](#evaluation)
 - [Cite](#cite)
 
 ## Setup
@@ -21,7 +20,7 @@ This repository contains the source code used in *Spatio-Temporal Super-Resoluti
 - At least, 1 GPU board is required.
 - Notes
   - The Docker containers have the same environments as in the Singularity containers.
-  - `tsubame` means the super-computer at Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en)).
+  - `tsubame` means the super-computer at the Tokyo Institute of Technology ([webpage](https://www.t3.gsic.titech.ac.jp/en)).
     - Singularity containers can be used on TSUBAME.
 
 ### Docker Containers
@@ -56,38 +55,31 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 
 ### CFD Simulations
 
-1. Set the preferences for CFD simulations
-   - Specify root directory path and seed indices in [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh), which performs [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) in the Singularity container.
-   - [`simulate_cfd_jet.py`](./pytorch/script/python/simulate_cfd_jet.py) conducts CFD simulations using batch calculations, where the batch size is `20` (i.e., `N_ENSEMBLES = 20`).
-2. Run [`simulate_cfd_jet.sh`](./pytorch/script/shell/simulate_cfd_jet.sh): `$ ./pytorch/script/shell/simulate_cfd_jet.sh`
-3. Confirm the simulation data exist in `./data/pytorch/CFD/jet01`.
+- Run the following scripts:
+  - [`./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_analysis_train_data.sh)
+  - [`./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh`](./pytorch/script/shell/simulate_cfd_jet_for_making_forecast_train_data.sh)
 
 ### Data for Deep Learning
 
-1. Run the Singularity container using `pytorch_local.sif` as described above.
-2. Split the CFD simulation data by running [`split_data_for_io_latency.ipynb`](./pytorch/notebook/paper_experiment/split_data_for_io_latency.ipynb)
-   - The IO latency will be lower because each simulation data (`.npy`) contains 20 simulation results.
-   - Splitting into 20 files makes the latency higher.
-3. Confirm the split simulation data exist in `./data/pytorch/CFD/jet02`.
-4. Check `dataset` and `dataloader` by running [`check_dataset_dataloader.ipynb`](./pytorch/notebook/paper_experiment/check_dataset_dataloader.ipynb)
+- Run the following notebook on JupyterLab: [`split_npy.ipynb`](./pytorch/notebook/split_npy.ipynb)
 
-### Deep Learning
+### Training and Tuning
 
-1. Set the preferences for deep learning
-   - Specify root directory path and config path in [train_ml_model.sh](./pytorch/script/shell/train_ml_model.sh).
-   - Configurations are stored in [config dir](./pytorch/config/paper_experiment/).
-2. Perform deep learning: `$ ./pytorch/script/shell/train_ml_model.sh`
-3. Repeat steps 1 and 2 until the experiments of all configurations are done.
+- In each script, configuration must be specified.
+- ST-SRDA
+  - [`./pytorch/script/shell/train_ddp_ml_model.sh`](./pytorch/script/shell/train_ddp_ml_model.sh) (for multiple GPUs)
+  - [`./pytorch/script/shell/train_ml_model.sh`](./pytorch/script/shell/train_ml_model.sh) (for a single GPU)
+- EnKF-SR
+  - [`./pytorch/script/shell/tune_enkf_sr.sh`](./pytorch/script/shell/tune_enkf_sr.sh)
+- EnKF-HR
+  - [`./pytorch/script/shell/tune_enkf_hr.sh`](./pytorch/script/shell/tune_enkf_hr.sh)
 
-### Evaluation of Trained Models
+### Evaluation
 
-1. Evaluate trained models using SRDA (repeating feedback cycles) by running [evaluate_ml_model_using_srda.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_srda.ipynb)
-2. Evaluate trained models using test dataloaders (without feedback cycles) by running [evaluate_ml_model_using_testdataset.ipynb](./pytorch/notebook/paper_experiment/evaluate_ml_model_using_testdataset.ipynb)
-
-### Comparison with EnKF (Baseline Model)
-
-1. Perform CFD simulations with EnKF by running [perform_enkf.ipynb](./pytorch/notebook/paper_experiment/perform_enkf.ipynb).
-2. Compare the obtained results with those of SRDA by running [compare_srda_enkf.ipynb](./pytorch/notebook/paper_experiment/compare_srda_enkf.ipynb).
+- Run the notebooks in the following order.
+  - [`./pytorch/notebook/test_srda_using_uhr.ipynb`](./pytorch/notebook/test_srda_using_uhr.ipynb)
+  - [`./pytorch/notebook/test_enkf_sr_using_uhr.ipynb`](./pytorch/notebook/test_enkf_sr_using_uhr.ipynb)
+  - [`./pytorch/notebook/test_enkf_hr_using_uhr.ipynb`](./pytorch/notebook/test_enkf_hr_using_uhr.ipynb)
 
 ## Cite
 
