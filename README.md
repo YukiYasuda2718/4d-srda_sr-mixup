@@ -1,8 +1,8 @@
 # 4d-srda_sr-mixup <!-- omit in toc -->
 
-[![license](https://img.shields.io/badge/license-CC%20BY--NC--SA-informational)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) [![reference](https://img.shields.io/badge/reference-arXiv-important)](https://arxiv.org/abs/2212.03656)  [![pytorch](https://img.shields.io/badge/PyTorch-1.11.0-informational)](https://pytorch.org/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7946486.svg)](https://doi.org/10.5281/zenodo.7946486)
+[![license](https://img.shields.io/badge/license-CC%20BY--NC--SA-informational)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) [![reference](https://img.shields.io/badge/reference-arXiv-important)](https://arxiv.org/abs/2212.03656) [![reference](https://img.shields.io/badge/reference-james-important)](https://doi.org/10.1029/2023MS003658) [![pytorch](https://img.shields.io/badge/PyTorch-1.11.0-informational)](https://pytorch.org/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7946486.svg)](https://doi.org/10.5281/zenodo.7946486)
 
-This repository contains the source code used in *Spatio-Temporal Super-Resolution Data Assimilation (SRDA) Utilizing Deep Neural Networks with Domain Generalization Technique Toward Four-Dimensional SRDA* ([arXiv](https://arxiv.org/abs/2212.03656)).
+This repository contains the source code used in *Spatio-Temporal Super-Resolution Data Assimilation (SRDA) Utilizing Deep Neural Networks with Domain Generalization Technique Toward Four-Dimensional SRDA* ([arXiv](https://arxiv.org/abs/2212.03656), [james](https://doi.org/10.1029/2023MS003658)).
 
 - [Setup](#setup)
   - [Docker Containers](#docker-containers)
@@ -87,13 +87,16 @@ $ singularity exec --nv --env PYTHONPATH="$(pwd)/pytorch" \
 ## Cite
 
 ```bibtex
-@misc{https://doi.org/10.48550/arxiv.2212.03656,
-  doi = {10.48550/ARXIV.2212.03656},
-  url = {https://arxiv.org/abs/2212.03656},
-  author = {Yasuda, Yuki and Onishi, Ryo},  
-  title = {Spatio-Temporal Super-Resolution Data Assimilation (SRDA) Utilizing Deep Neural Networks with Domain Generalization Technique Toward Four-Dimensional SRDA},
-  publisher = {arXiv},
-  year = {2022},
-  copyright = {arXiv.org perpetual, non-exclusive license}
+@article{
+  author = {Yasuda, Yuki and Onishi, Ryo},
+  title = {Spatio-Temporal Super-Resolution Data Assimilation (SRDA) Utilizing Deep Neural Networks With Domain Generalization},
+  journal = {Journal of Advances in Modeling Earth Systems},
+  volume = {15},
+  number = {11},
+  pages = {e2023MS003658},
+  doi = {https://doi.org/10.1029/2023MS003658},
+  url = {https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2023MS003658},
+  eprint = {https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2023MS003658},
+  year = {2023}
 }
 ```
